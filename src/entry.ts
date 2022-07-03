@@ -1,4 +1,4 @@
-import { init } from "./graphql-server";
+import { init } from "./app";
 
 init().catch(error => {
   console.error(error);

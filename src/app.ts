@@ -1,5 +1,7 @@
 import express from "express";
 
+import * as GraphQL from "./graphql-middleware";
+
 const PORT = process.env.PORT || 3000;
 
 process.on("unhandledRejection", error => {
@@ -8,17 +10,11 @@ process.on("unhandledRejection", error => {
 
 const createApp = () => {
   const app = express();
-
-  app.get("*", (req: express.Request, res: express.Response) => {
-    console.log(`req = ${req.url}`);
-    res.json({ query: (req as any).query });
-    res.end();
-  });
-
+  app.use("/graphql", GraphQL.createGraphQLRouter());
   return app;
 };
 
-const init = async () => {
+export const init = async () => {
   const app = createApp();
 
   let serverClosing = false;
@@ -50,8 +46,3 @@ const init = async () => {
     startClose("SIGHUP");
   });
 };
-
-init().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
