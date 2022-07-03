@@ -13,7 +13,7 @@ const rootValue = {
   },
 };
 
-export const createGraphQLRouter = () => {
+export const createGraphqlMiddleware = () => {
   return graphqlHTTP({
     schema: schema,
     rootValue: rootValue,

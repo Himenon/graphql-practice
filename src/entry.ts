@@ -1,7 +1,12 @@
-import { init } from "./app";
+import { createServer } from "./server";
+import { deferGracefulShutdown } from "./utils/graceful-shutdown";
 
-init().catch(error => {
+const main = async () => {
+  const httpServer = createServer();
+  deferGracefulShutdown(httpServer);
+};
+
+main().catch(error => {
   console.error(error);
+  process.exit(1);
 });
-
-console.log("Start");
