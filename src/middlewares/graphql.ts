@@ -1,19 +1,33 @@
+import { randomBytes } from "crypto";
 import { graphqlHTTP } from "express-graphql";
 import { buildSchema } from "graphql";
 
+import { Message, MessageArgs } from "../graphql-schema/Message";
 import { RandomDie } from "../graphql-schema/RandomDie";
 
 const schema = buildSchema(`
-type RandomDie {
-  numSides: Int!
-  rollOnce: Int!
-  roll(numRolls: Int!): [Int]
+input MessageInput {
+  content: String
+  author: String
+}
+
+type Message {
+  id: ID!
+  content: String
+  author: String
 }
 
 type Query {
-  getDie(numSides: Int): RandomDie
+  getMessage(id: ID!): Message
+}
+
+type Mutation {
+  createMessage(input: MessageInput): Message
+  updateMessage(id: ID!, input: MessageInput): Message
 }
 `);
+
+const fakeDatabase: Record<string, MessageArgs> = {};
 
 const rootValue = {
   quoteOfTheDay: () => {
@@ -34,6 +48,26 @@ const rootValue = {
   },
   getDie: ({ numSides }: { numSides: number }) => {
     return new RandomDie(numSides || 6);
+  },
+  getMessage: ({ id }: { id: string }) => {
+    if (!fakeDatabase[id]) {
+      throw new Error("no message exists with id " + id);
+    }
+    return new Message(id, fakeDatabase[id]);
+  },
+  createMessage: ({ input }: { input: MessageArgs }) => {
+    // Create a random id for our "database".
+    const id = randomBytes(10).toString("hex");
+    fakeDatabase[id] = input;
+    return new Message(id, input);
+  },
+  updateMessage: ({ id, input }: { id: string; input: MessageArgs }) => {
+    if (!fakeDatabase[id]) {
+      throw new Error("no message exists with id " + id);
+    }
+    // This replaces all old data, but some apps might want partial update.
+    fakeDatabase[id] = input;
+    return new Message(id, input);
   },
 };
 
