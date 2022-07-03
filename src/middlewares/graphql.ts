@@ -1,12 +1,17 @@
 import { graphqlHTTP } from "express-graphql";
 import { buildSchema } from "graphql";
 
+import { RandomDie } from "../graphql-schema/RandomDie";
+
 const schema = buildSchema(`
+type RandomDie {
+  numSides: Int!
+  rollOnce: Int!
+  roll(numRolls: Int!): [Int]
+}
+
 type Query {
-  quoteOfTheDay: String
-  random: Float!
-  rollThreeDice: [Int]
-  rollDice(numDice: Int!, numSides: Int): [Int]
+  getDie(numSides: Int): RandomDie
 }
 `);
 
@@ -26,6 +31,9 @@ const rootValue = {
       output.push(1 + Math.floor(Math.random() * (args.numSides || 6)));
     }
     return output;
+  },
+  getDie: ({ numSides }: { numSides: number }) => {
+    return new RandomDie(numSides || 6);
   },
 };
 
